@@ -1,0 +1,796 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "d02a7771",
+   "metadata": {
+    "_cell_guid": "b1076dfc-b9ad-4769-8c92-a6c4dae69d19",
+    "_uuid": "8f2839f25d086af736a60e9eeb907d3b93b6e0e5",
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:56.940525Z",
+     "iopub.status.busy": "2024-09-06T05:56:56.939970Z",
+     "iopub.status.idle": "2024-09-06T05:56:57.364157Z",
+     "shell.execute_reply": "2024-09-06T05:56:57.362891Z"
+    },
+    "papermill": {
+     "duration": 0.434616,
+     "end_time": "2024-09-06T05:56:57.367138",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:56.932522",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/kaggle/input/customers-dataset/Customers.csv\n"
+     ]
+    }
+   ],
+   "source": [
+    "# This Python 3 environment comes with many helpful analytics libraries installed\n",
+    "# It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python\n",
+    "# For example, here's several helpful packages to load\n",
+    "\n",
+    "import numpy as np # linear algebra\n",
+    "import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)\n",
+    "\n",
+    "# Input data files are available in the read-only \"../input/\" directory\n",
+    "# For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory\n",
+    "\n",
+    "import os\n",
+    "for dirname, _, filenames in os.walk('/kaggle/input'):\n",
+    "    for filename in filenames:\n",
+    "        print(os.path.join(dirname, filename))\n",
+    "\n",
+    "# You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using \"Save & Run All\" \n",
+    "# You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "3d940f40",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:57.379555Z",
+     "iopub.status.busy": "2024-09-06T05:56:57.379005Z",
+     "iopub.status.idle": "2024-09-06T05:56:57.384430Z",
+     "shell.execute_reply": "2024-09-06T05:56:57.383292Z"
+    },
+    "papermill": {
+     "duration": 0.014644,
+     "end_time": "2024-09-06T05:56:57.387233",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:57.372589",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# Suppress warnings\n",
+    "import warnings\n",
+    "warnings.filterwarnings('ignore')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "1919dec4",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:57.399791Z",
+     "iopub.status.busy": "2024-09-06T05:56:57.399341Z",
+     "iopub.status.idle": "2024-09-06T05:56:57.426640Z",
+     "shell.execute_reply": "2024-09-06T05:56:57.425504Z"
+    },
+    "papermill": {
+     "duration": 0.036693,
+     "end_time": "2024-09-06T05:56:57.429303",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:57.392610",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "customer_data = pd.read_csv('/kaggle/input/customers-dataset/Customers.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "529c9cbd",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:57.441328Z",
+     "iopub.status.busy": "2024-09-06T05:56:57.440933Z",
+     "iopub.status.idle": "2024-09-06T05:56:57.466506Z",
+     "shell.execute_reply": "2024-09-06T05:56:57.465130Z"
+    },
+    "papermill": {
+     "duration": 0.03467,
+     "end_time": "2024-09-06T05:56:57.469181",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:57.434511",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>CustomerID</th>\n",
+       "      <th>Gender</th>\n",
+       "      <th>Age</th>\n",
+       "      <th>Annual Income ($)</th>\n",
+       "      <th>Spending Score (1-100)</th>\n",
+       "      <th>Profession</th>\n",
+       "      <th>Work Experience</th>\n",
+       "      <th>Family Size</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>1</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>19</td>\n",
+       "      <td>15000</td>\n",
+       "      <td>39</td>\n",
+       "      <td>Healthcare</td>\n",
+       "      <td>1</td>\n",
+       "      <td>4</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>21</td>\n",
+       "      <td>35000</td>\n",
+       "      <td>81</td>\n",
+       "      <td>Engineer</td>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>3</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>20</td>\n",
+       "      <td>86000</td>\n",
+       "      <td>6</td>\n",
+       "      <td>Engineer</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>4</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>23</td>\n",
+       "      <td>59000</td>\n",
+       "      <td>77</td>\n",
+       "      <td>Lawyer</td>\n",
+       "      <td>0</td>\n",
+       "      <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>5</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>31</td>\n",
+       "      <td>38000</td>\n",
+       "      <td>40</td>\n",
+       "      <td>Entertainment</td>\n",
+       "      <td>2</td>\n",
+       "      <td>6</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   CustomerID  Gender  Age  Annual Income ($)  Spending Score (1-100)  \\\n",
+       "0           1    Male   19              15000                      39   \n",
+       "1           2    Male   21              35000                      81   \n",
+       "2           3  Female   20              86000                       6   \n",
+       "3           4  Female   23              59000                      77   \n",
+       "4           5  Female   31              38000                      40   \n",
+       "\n",
+       "      Profession  Work Experience  Family Size  \n",
+       "0     Healthcare                1            4  \n",
+       "1       Engineer                3            3  \n",
+       "2       Engineer                1            1  \n",
+       "3         Lawyer                0            2  \n",
+       "4  Entertainment                2            6  "
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "customer_data.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "d4ca9bbf",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:57.481661Z",
+     "iopub.status.busy": "2024-09-06T05:56:57.481213Z",
+     "iopub.status.idle": "2024-09-06T05:56:57.492676Z",
+     "shell.execute_reply": "2024-09-06T05:56:57.491679Z"
+    },
+    "papermill": {
+     "duration": 0.020409,
+     "end_time": "2024-09-06T05:56:57.494940",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:57.474531",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "X = customer_data.drop(columns=['Spending Score (1-100)','CustomerID'])\n",
+    "y = customer_data['Spending Score (1-100)']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "a3024ea5",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:57.507512Z",
+     "iopub.status.busy": "2024-09-06T05:56:57.507093Z",
+     "iopub.status.idle": "2024-09-06T05:56:57.528163Z",
+     "shell.execute_reply": "2024-09-06T05:56:57.526837Z"
+    },
+    "papermill": {
+     "duration": 0.030387,
+     "end_time": "2024-09-06T05:56:57.530795",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:57.500408",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "for columns in X.columns:\n",
+    "    if X[columns].dtype == 'object':\n",
+    "        X[columns].fillna(X[columns].mode()[0],inplace=True)\n",
+    "    else :\n",
+    "        X[columns].fillna(X[columns].median(),inplace=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "5de6e5ef",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:57.543373Z",
+     "iopub.status.busy": "2024-09-06T05:56:57.542928Z",
+     "iopub.status.idle": "2024-09-06T05:56:57.550068Z",
+     "shell.execute_reply": "2024-09-06T05:56:57.548728Z"
+    },
+    "papermill": {
+     "duration": 0.016354,
+     "end_time": "2024-09-06T05:56:57.552485",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:57.536131",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "#columns to include for scaling\n",
+    "numerical_columns = X.select_dtypes(include=['number']).columns\n",
+    "categorical_column = X.select_dtypes(include=['object']).columns"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "e4e8adb1",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:57.565149Z",
+     "iopub.status.busy": "2024-09-06T05:56:57.564675Z",
+     "iopub.status.idle": "2024-09-06T05:56:59.546201Z",
+     "shell.execute_reply": "2024-09-06T05:56:59.545030Z"
+    },
+    "papermill": {
+     "duration": 1.990783,
+     "end_time": "2024-09-06T05:56:59.548749",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:57.557966",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "from sklearn.preprocessing import StandardScaler\n",
+    "from sklearn.preprocessing import OrdinalEncoder\n",
+    "from sklearn.pipeline import Pipeline\n",
+    "from sklearn.compose import ColumnTransformer\n",
+    "from sklearn.ensemble import VotingRegressor\n",
+    "from sklearn.svm import SVR\n",
+    "from sklearn.linear_model import Lasso\n",
+    "from sklearn.tree import DecisionTreeRegressor\n",
+    "from sklearn.metrics import mean_squared_error,r2_score"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "bdad758e",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:59.561424Z",
+     "iopub.status.busy": "2024-09-06T05:56:59.560849Z",
+     "iopub.status.idle": "2024-09-06T05:56:59.566678Z",
+     "shell.execute_reply": "2024-09-06T05:56:59.565514Z"
+    },
+    "papermill": {
+     "duration": 0.014829,
+     "end_time": "2024-09-06T05:56:59.568904",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:59.554075",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "transformer = ColumnTransformer(transformers=[\n",
+    "    ('numerical',StandardScaler(),numerical_columns),\n",
+    "    ('categorical',OrdinalEncoder(),categorical_column)\n",
+    "],remainder = 'passthrough')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "4a3dfeec",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:59.581162Z",
+     "iopub.status.busy": "2024-09-06T05:56:59.580663Z",
+     "iopub.status.idle": "2024-09-06T05:56:59.586078Z",
+     "shell.execute_reply": "2024-09-06T05:56:59.584999Z"
+    },
+    "papermill": {
+     "duration": 0.014419,
+     "end_time": "2024-09-06T05:56:59.588561",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:59.574142",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# svc_reg = SVR(kernel='rbf',gamma = 10, C=0.1)\n",
+    "# lr_reg = Lasso(alpha=10,max_iter=1000,tol=0.0001)\n",
+    "# dt_reg = DecisionTreeRegressor(criterion='squared_error',max_depth=100,min_samples_split=4)\n",
+    "\n",
+    "svc_reg = SVR()\n",
+    "lr_reg = Lasso()\n",
+    "dt_reg = DecisionTreeRegressor()\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "de00b48c",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:59.600718Z",
+     "iopub.status.busy": "2024-09-06T05:56:59.600264Z",
+     "iopub.status.idle": "2024-09-06T05:56:59.605789Z",
+     "shell.execute_reply": "2024-09-06T05:56:59.604732Z"
+    },
+    "papermill": {
+     "duration": 0.014451,
+     "end_time": "2024-09-06T05:56:59.608212",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:59.593761",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "ensemble_reg = VotingRegressor(estimators=[\n",
+    "    ('svc',svc_reg),\n",
+    "    ('lasso',lr_reg),\n",
+    "    ('tree',dt_reg)\n",
+    "])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "aaba78bd",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:59.621152Z",
+     "iopub.status.busy": "2024-09-06T05:56:59.620718Z",
+     "iopub.status.idle": "2024-09-06T05:56:59.626026Z",
+     "shell.execute_reply": "2024-09-06T05:56:59.624973Z"
+    },
+    "papermill": {
+     "duration": 0.014737,
+     "end_time": "2024-09-06T05:56:59.628339",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:59.613602",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "#Creating Pipeline \n",
+    "pipeline = Pipeline(steps=[\n",
+    "    ('transform',transformer),\n",
+    "    ('ensemble',ensemble_reg)\n",
+    "])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "881a1f87",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:59.640781Z",
+     "iopub.status.busy": "2024-09-06T05:56:59.640304Z",
+     "iopub.status.idle": "2024-09-06T05:56:59.653356Z",
+     "shell.execute_reply": "2024-09-06T05:56:59.652152Z"
+    },
+    "papermill": {
+     "duration": 0.022595,
+     "end_time": "2024-09-06T05:56:59.656152",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:59.633557",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "from sklearn.model_selection import train_test_split\n",
+    "X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=42)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "026e5016",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:59.668853Z",
+     "iopub.status.busy": "2024-09-06T05:56:59.668033Z",
+     "iopub.status.idle": "2024-09-06T05:56:59.678800Z",
+     "shell.execute_reply": "2024-09-06T05:56:59.677759Z"
+    },
+    "papermill": {
+     "duration": 0.019806,
+     "end_time": "2024-09-06T05:56:59.681320",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:59.661514",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "Gender               0\n",
+       "Age                  0\n",
+       "Annual Income ($)    0\n",
+       "Profession           0\n",
+       "Work Experience      0\n",
+       "Family Size          0\n",
+       "dtype: int64"
+      ]
+     },
+     "execution_count": 14,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X.isnull().sum()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "31d7efc5",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:59.693959Z",
+     "iopub.status.busy": "2024-09-06T05:56:59.693539Z",
+     "iopub.status.idle": "2024-09-06T05:56:59.894583Z",
+     "shell.execute_reply": "2024-09-06T05:56:59.893182Z"
+    },
+    "papermill": {
+     "duration": 0.210095,
+     "end_time": "2024-09-06T05:56:59.897057",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:59.686962",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<style>#sk-container-id-1 {color: black;background-color: white;}#sk-container-id-1 pre{padding: 0;}#sk-container-id-1 div.sk-toggleable {background-color: white;}#sk-container-id-1 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-1 label.sk-toggleable__label-arrow:before {content: \"▸\";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-1 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-1 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-1 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: \"▾\";}#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-1 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-1 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-1 div.sk-parallel-item::after {content: \"\";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-serial::before {content: \"\";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-1 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-1 div.sk-item {position: relative;z-index: 1;}#sk-container-id-1 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-1 div.sk-item::before, #sk-container-id-1 div.sk-parallel-item::before {content: \"\";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-1 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-1 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-1 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-1 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-1 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-1 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-1 div.sk-label-container {text-align: center;}#sk-container-id-1 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-1 div.sk-text-repr-fallback {display: none;}</style><div id=\"sk-container-id-1\" class=\"sk-top-container\"><div class=\"sk-text-repr-fallback\"><pre>Pipeline(steps=[(&#x27;transform&#x27;,\n",
+       "                 ColumnTransformer(remainder=&#x27;passthrough&#x27;,\n",
+       "                                   transformers=[(&#x27;numerical&#x27;, StandardScaler(),\n",
+       "                                                  Index([&#x27;Age&#x27;, &#x27;Annual Income ($)&#x27;, &#x27;Work Experience&#x27;, &#x27;Family Size&#x27;], dtype=&#x27;object&#x27;)),\n",
+       "                                                 (&#x27;categorical&#x27;,\n",
+       "                                                  OrdinalEncoder(),\n",
+       "                                                  Index([&#x27;Gender&#x27;, &#x27;Profession&#x27;], dtype=&#x27;object&#x27;))])),\n",
+       "                (&#x27;ensemble&#x27;,\n",
+       "                 VotingRegressor(estimators=[(&#x27;svc&#x27;, SVR()), (&#x27;lasso&#x27;, Lasso()),\n",
+       "                                             (&#x27;tree&#x27;,\n",
+       "                                              DecisionTreeRegressor())]))])</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class=\"sk-container\" hidden><div class=\"sk-item sk-dashed-wrapped\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-1\" type=\"checkbox\" ><label for=\"sk-estimator-id-1\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">Pipeline</label><div class=\"sk-toggleable__content\"><pre>Pipeline(steps=[(&#x27;transform&#x27;,\n",
+       "                 ColumnTransformer(remainder=&#x27;passthrough&#x27;,\n",
+       "                                   transformers=[(&#x27;numerical&#x27;, StandardScaler(),\n",
+       "                                                  Index([&#x27;Age&#x27;, &#x27;Annual Income ($)&#x27;, &#x27;Work Experience&#x27;, &#x27;Family Size&#x27;], dtype=&#x27;object&#x27;)),\n",
+       "                                                 (&#x27;categorical&#x27;,\n",
+       "                                                  OrdinalEncoder(),\n",
+       "                                                  Index([&#x27;Gender&#x27;, &#x27;Profession&#x27;], dtype=&#x27;object&#x27;))])),\n",
+       "                (&#x27;ensemble&#x27;,\n",
+       "                 VotingRegressor(estimators=[(&#x27;svc&#x27;, SVR()), (&#x27;lasso&#x27;, Lasso()),\n",
+       "                                             (&#x27;tree&#x27;,\n",
+       "                                              DecisionTreeRegressor())]))])</pre></div></div></div><div class=\"sk-serial\"><div class=\"sk-item sk-dashed-wrapped\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-2\" type=\"checkbox\" ><label for=\"sk-estimator-id-2\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">transform: ColumnTransformer</label><div class=\"sk-toggleable__content\"><pre>ColumnTransformer(remainder=&#x27;passthrough&#x27;,\n",
+       "                  transformers=[(&#x27;numerical&#x27;, StandardScaler(),\n",
+       "                                 Index([&#x27;Age&#x27;, &#x27;Annual Income ($)&#x27;, &#x27;Work Experience&#x27;, &#x27;Family Size&#x27;], dtype=&#x27;object&#x27;)),\n",
+       "                                (&#x27;categorical&#x27;, OrdinalEncoder(),\n",
+       "                                 Index([&#x27;Gender&#x27;, &#x27;Profession&#x27;], dtype=&#x27;object&#x27;))])</pre></div></div></div><div class=\"sk-parallel\"><div class=\"sk-parallel-item\"><div class=\"sk-item\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-3\" type=\"checkbox\" ><label for=\"sk-estimator-id-3\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">numerical</label><div class=\"sk-toggleable__content\"><pre>Index([&#x27;Age&#x27;, &#x27;Annual Income ($)&#x27;, &#x27;Work Experience&#x27;, &#x27;Family Size&#x27;], dtype=&#x27;object&#x27;)</pre></div></div></div><div class=\"sk-serial\"><div class=\"sk-item\"><div class=\"sk-estimator sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-4\" type=\"checkbox\" ><label for=\"sk-estimator-id-4\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">StandardScaler</label><div class=\"sk-toggleable__content\"><pre>StandardScaler()</pre></div></div></div></div></div></div><div class=\"sk-parallel-item\"><div class=\"sk-item\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-5\" type=\"checkbox\" ><label for=\"sk-estimator-id-5\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">categorical</label><div class=\"sk-toggleable__content\"><pre>Index([&#x27;Gender&#x27;, &#x27;Profession&#x27;], dtype=&#x27;object&#x27;)</pre></div></div></div><div class=\"sk-serial\"><div class=\"sk-item\"><div class=\"sk-estimator sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-6\" type=\"checkbox\" ><label for=\"sk-estimator-id-6\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">OrdinalEncoder</label><div class=\"sk-toggleable__content\"><pre>OrdinalEncoder()</pre></div></div></div></div></div></div><div class=\"sk-parallel-item\"><div class=\"sk-item\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-7\" type=\"checkbox\" ><label for=\"sk-estimator-id-7\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">remainder</label><div class=\"sk-toggleable__content\"><pre>[]</pre></div></div></div><div class=\"sk-serial\"><div class=\"sk-item\"><div class=\"sk-estimator sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-8\" type=\"checkbox\" ><label for=\"sk-estimator-id-8\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">passthrough</label><div class=\"sk-toggleable__content\"><pre>passthrough</pre></div></div></div></div></div></div></div></div><div class=\"sk-item sk-dashed-wrapped\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-9\" type=\"checkbox\" ><label for=\"sk-estimator-id-9\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">ensemble: VotingRegressor</label><div class=\"sk-toggleable__content\"><pre>VotingRegressor(estimators=[(&#x27;svc&#x27;, SVR()), (&#x27;lasso&#x27;, Lasso()),\n",
+       "                            (&#x27;tree&#x27;, DecisionTreeRegressor())])</pre></div></div></div><div class=\"sk-parallel\"><div class=\"sk-parallel-item\"><div class=\"sk-item\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><label>svc</label></div></div><div class=\"sk-serial\"><div class=\"sk-item\"><div class=\"sk-estimator sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-10\" type=\"checkbox\" ><label for=\"sk-estimator-id-10\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">SVR</label><div class=\"sk-toggleable__content\"><pre>SVR()</pre></div></div></div></div></div></div><div class=\"sk-parallel-item\"><div class=\"sk-item\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><label>lasso</label></div></div><div class=\"sk-serial\"><div class=\"sk-item\"><div class=\"sk-estimator sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-11\" type=\"checkbox\" ><label for=\"sk-estimator-id-11\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">Lasso</label><div class=\"sk-toggleable__content\"><pre>Lasso()</pre></div></div></div></div></div></div><div class=\"sk-parallel-item\"><div class=\"sk-item\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><label>tree</label></div></div><div class=\"sk-serial\"><div class=\"sk-item\"><div class=\"sk-estimator sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-12\" type=\"checkbox\" ><label for=\"sk-estimator-id-12\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">DecisionTreeRegressor</label><div class=\"sk-toggleable__content\"><pre>DecisionTreeRegressor()</pre></div></div></div></div></div></div></div></div></div></div></div></div>"
+      ],
+      "text/plain": [
+       "Pipeline(steps=[('transform',\n",
+       "                 ColumnTransformer(remainder='passthrough',\n",
+       "                                   transformers=[('numerical', StandardScaler(),\n",
+       "                                                  Index(['Age', 'Annual Income ($)', 'Work Experience', 'Family Size'], dtype='object')),\n",
+       "                                                 ('categorical',\n",
+       "                                                  OrdinalEncoder(),\n",
+       "                                                  Index(['Gender', 'Profession'], dtype='object'))])),\n",
+       "                ('ensemble',\n",
+       "                 VotingRegressor(estimators=[('svc', SVR()), ('lasso', Lasso()),\n",
+       "                                             ('tree',\n",
+       "                                              DecisionTreeRegressor())]))])"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "pipeline.fit(X_train,y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "56cc54a5",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:59.911138Z",
+     "iopub.status.busy": "2024-09-06T05:56:59.910105Z",
+     "iopub.status.idle": "2024-09-06T05:56:59.956253Z",
+     "shell.execute_reply": "2024-09-06T05:56:59.954413Z"
+    },
+    "papermill": {
+     "duration": 0.055963,
+     "end_time": "2024-09-06T05:56:59.958850",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:59.902887",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "The mean squared error of the model is 829.40\n",
+      "The R2 score of the model is -0.08\n"
+     ]
+    }
+   ],
+   "source": [
+    "y_pred = pipeline.predict(X_test)\n",
+    "print(\"The mean squared error of the model is {0:.2f}\".format(mean_squared_error(y_test,y_pred)))\n",
+    "print(\"The R2 score of the model is {0:.2f}\".format(r2_score(y_test,y_pred)))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "54a0ba4a",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:59.972611Z",
+     "iopub.status.busy": "2024-09-06T05:56:59.972159Z",
+     "iopub.status.idle": "2024-09-06T05:56:59.980287Z",
+     "shell.execute_reply": "2024-09-06T05:56:59.979048Z"
+    },
+    "papermill": {
+     "duration": 0.017836,
+     "end_time": "2024-09-06T05:56:59.982767",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:59.964931",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([45.58272372, 38.88867066, 48.69437378, 51.03768255, 63.53109555])"
+      ]
+     },
+     "execution_count": 17,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "y_pred[:5]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "15ae1986",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T05:56:59.997060Z",
+     "iopub.status.busy": "2024-09-06T05:56:59.996238Z",
+     "iopub.status.idle": "2024-09-06T05:57:00.006375Z",
+     "shell.execute_reply": "2024-09-06T05:57:00.004483Z"
+    },
+    "papermill": {
+     "duration": 0.020142,
+     "end_time": "2024-09-06T05:57:00.009033",
+     "exception": false,
+     "start_time": "2024-09-06T05:56:59.988891",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "1860    28\n",
+       "353     35\n",
+       "1333    58\n",
+       "905      8\n",
+       "1289    42\n",
+       "Name: Spending Score (1-100), dtype: int64"
+      ]
+     },
+     "execution_count": 18,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "y_test[:5]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "38d50974",
+   "metadata": {
+    "papermill": {
+     "duration": 0.005889,
+     "end_time": "2024-09-06T05:57:00.021058",
+     "exception": false,
+     "start_time": "2024-09-06T05:57:00.015169",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kaggle": {
+   "accelerator": "none",
+   "dataSources": [
+    {
+     "datasetId": 2877553,
+     "sourceId": 4961558,
+     "sourceType": "datasetVersion"
+    }
+   ],
+   "dockerImageVersionId": 30761,
+   "isGpuEnabled": false,
+   "isInternetEnabled": true,
+   "language": "python",
+   "sourceType": "notebook"
+  },
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.14"
+  },
+  "papermill": {
+   "default_parameters": {},
+   "duration": 6.635035,
+   "end_time": "2024-09-06T05:57:00.649657",
+   "environment_variables": {},
+   "exception": null,
+   "input_path": "__notebook__.ipynb",
+   "output_path": "__notebook__.ipynb",
+   "parameters": {},
+   "start_time": "2024-09-06T05:56:54.014622",
+   "version": "2.6.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
